@@ -1,0 +1,107 @@
+<div class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen flex flex-col items-center justify-center p-4 font-display relative">
+  <!-- Action Buttons -->
+  <div class="absolute top-4 right-4 flex gap-2 z-10">
+    <button (click)="restartGame()" class="size-12 rounded-full bg-white dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center text-amber-500 hover:text-amber-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+      <span class="material-symbols-outlined !text-3xl">refresh</span>
+    </button>
+    <a routerLink="/games" class="size-12 rounded-full bg-white dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center text-blue-500 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+      <span class="material-symbols-outlined !text-3xl">arrow_back</span>
+    </a>
+  </div>
+  
+  <div class="w-full max-w-7xl mx-auto">
+    <!-- Start Screen -->
+    @if (gameState() === 'start') {
+      <div class="bg-white dark:bg-[#1a2632] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-8 text-center flex flex-col items-center gap-6 animate-fade-in">
+        <div class="size-20 bg-red-600/10 text-red-600 rounded-full flex items-center justify-center">
+          <span class="material-symbols-outlined !text-5xl">timeline</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl font-black">Cableado Maestro</h1>
+        <p class="text-gray-600 dark:text-gray-400 max-w-lg">
+          ¡A lo que vinimos! Cablea el circuito de potencia y mando para una inversión de giro. Fíjate bien en el esquema. Cada cable cuenta. ¡Demuestra tu maestría!
+        </p>
+        <button (click)="startGame()" class="w-full md:w-auto flex items-center justify-center gap-3 rounded-xl h-14 px-8 bg-blue-600 text-white text-lg font-bold hover:bg-blue-700 transition-transform hover:scale-105 shadow-lg shadow-blue-500/30">
+          <span class="material-symbols-outlined">play_circle</span>
+          <span>¡Empezar a Cablear!</span>
+        </button>
+      </div>
+    }
+
+    <!-- Playing Screen -->
+    @if (gameState() === 'playing') {
+      <div class="bg-white dark:bg-[#1a2632] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 animate-fade-in overflow-hidden">
+        <header class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+            <h2 class="font-bold text-lg">Mesa de Trabajo: Inversión de Giro</h2>
+            <div class="flex items-center gap-4">
+                <div class="w-48 text-right">
+                    <p class="font-bold text-sm">PROGRESO</p>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-1">
+                        <div class="bg-green-500 h-2.5 rounded-full transition-all" [style.width]="progress() + '%'"></div>
+                    </div>
+                </div>
+                <p class="font-black text-xl">{{ userConnections().length }}/{{ requiredConnectionsCount }}</p>
+            </div>
+        </header>
+        <div class="flex flex-col xl:flex-row">
+            <aside class="xl:w-[500px] p-4 bg-gray-50 dark:bg-gray-900/50 border-b xl:border-b-0 xl:border-r border-gray-200 dark:border-gray-800">
+                <h3 class="font-bold mb-2">Esquemas de Referencia</h3>
+                <img src="https://storage.googleapis.com/aida-images/inversion-giro-p-c.png" alt="Esquema de inversión de giro" class="rounded-lg shadow-md w-full">
+            </aside>
+            <main class="flex-1 p-4 md:p-8" [class.animate-shake]="errorState()" style="animation-duration: 300ms;">
+                <div class="bg-gray-200 dark:bg-gray-800 w-[520px] h-[400px] mx-auto rounded-lg shadow-inner relative">
+                    <!-- Components -->
+                    <div class="absolute top-20 left-5 w-40 h-40 bg-gray-300 dark:bg-gray-700/50 rounded p-1 text-center text-xs font-bold text-gray-500">KM1</div>
+                    <div class="absolute top-20 left-48 w-40 h-40 bg-gray-300 dark:bg-gray-700/50 rounded p-1 text-center text-xs font-bold text-gray-500">KM2</div>
+                    <div class="absolute top-60 left-48 w-40 h-20 bg-gray-300 dark:bg-gray-700/50 rounded p-1 text-center text-xs font-bold text-gray-500">F1</div>
+                    <div class="absolute top-20 left-[380px] w-12 h-40 bg-gray-300 dark:bg-gray-700/50 rounded p-1 text-center text-xs font-bold text-gray-500">BOTONES</div>
+                    
+                    <!-- Terminals -->
+                    @for(terminal of objectValues(terminals); track terminal.id) {
+                        <button (click)="handleTerminalClick(terminal.id)" class="absolute size-3 bg-gray-500 dark:bg-gray-400 rounded-full border-2 border-white dark:border-gray-900 hover:bg-yellow-400 transition-all"
+                                [style.left.px]="terminal.x - 6" [style.top.px]="terminal.y - 6"
+                                [class.bg-yellow-400]="selectedTerminal()?.id === terminal.id"
+                                [class.ring-2]="selectedTerminal()?.id === terminal.id"
+                                [class.ring-yellow-300]="selectedTerminal()?.id === terminal.id">
+                        </button>
+                    }
+                    
+                    <!-- Wires -->
+                    <svg class="absolute inset-0 w-full h-full overflow-visible" style="pointer-events: none;">
+                       @for(conn of userConnections(); track conn) {
+                           <line [attr.x1]="terminals[conn.from].x" [attr.y1]="terminals[conn.from].y"
+                                 [attr.x2]="terminals[conn.to].x" [attr.y2]="terminals[conn.to].y"
+                                 stroke="#3b82f6" stroke-width="2.5" />
+                       }
+                       @if(selectedTerminal(); as start) {
+                         <!-- Placeholder for live wire drawing if needed -->
+                       }
+                    </svg>
+                </div>
+            </main>
+        </div>
+      </div>
+    }
+
+    <!-- Finished Screen -->
+    @if (gameState() === 'finished') {
+      <div class="bg-white dark:bg-[#1a2632] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-8 text-center flex flex-col items-center gap-6 animate-fade-in">
+        <div class="size-20 bg-green-100 dark:bg-green-900/30 text-green-500 rounded-full flex items-center justify-center">
+          <span class="material-symbols-outlined !text-5xl">emoji_events</span>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-black">¡Circuito Completado!</h1>
+        <p class="text-gray-600 dark:text-gray-400 text-lg max-w-md">¡Tremendo trabajo! Cableaste el circuito de inversión de giro como un profesional. Ya estás un paso más cerca de dominar el examen práctico.</p>
+
+        <div class="flex flex-col md:flex-row gap-4 w-full mt-4">
+          <button (click)="restartGame()" class="w-full flex items-center justify-center gap-3 rounded-xl h-12 px-6 bg-blue-600 text-white font-bold hover:bg-blue-700 transition-transform hover:scale-105 shadow-lg shadow-blue-500/30">
+            <span class="material-symbols-outlined">refresh</span>
+            <span>Jugar de Nuevo</span>
+          </button>
+          <a routerLink="/games" class="w-full flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+            <span class="material-symbols-outlined">sports_esports</span>
+            <span>Ver otros juegos</span>
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+</div>

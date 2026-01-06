@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, signal, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { GAME_QUESTIONS, GameQuestion } from './questions';
+import { ProgressService } from '../../../services/progress.service';
 
 type GameState = 'start' | 'playing' | 'finished';
 
@@ -19,6 +20,8 @@ export class VoltajeVelozComponent implements OnDestroy {
   selectedAnswer = signal<number | null>(null);
   
   private timerInterval: any;
+
+  constructor(private progressService: ProgressService) {}
 
   // Derived state
   currentQuestion = computed(() => this.questions()[this.currentQuestionIndex()]);
@@ -109,6 +112,7 @@ export class VoltajeVelozComponent implements OnDestroy {
 
   private endGame() {
     this.gameState.set('finished');
+    this.progressService.completeGame(this.score(), this.questions().length);
   }
 
   restartGame() {

@@ -1,6 +1,15 @@
-<div class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen flex flex-col items-center justify-center p-4 font-display">
+<div class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen flex flex-col items-center justify-center p-4 font-display relative">
+  <!-- Action Buttons -->
+  <div class="absolute top-4 right-4 flex gap-2 z-10">
+    <button (click)="restartGame()" class="size-12 rounded-full bg-white dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center text-amber-500 hover:text-amber-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+      <span class="material-symbols-outlined !text-3xl">refresh</span>
+    </button>
+    <a routerLink="/games" class="size-12 rounded-full bg-white dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border border-gray-200 dark:border-gray-700 flex items-center justify-center text-blue-500 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+      <span class="material-symbols-outlined !text-3xl">arrow_back</span>
+    </a>
+  </div>
+  
   <div class="w-full max-w-2xl mx-auto">
-    
     <!-- Start Screen -->
     @if (gameState() === 'start') {
       <div class="bg-white dark:bg-[#1a2632] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-8 text-center flex flex-col items-center gap-6 animate-fade-in">
@@ -61,7 +70,7 @@
     @if (gameState() === 'finished') {
       <div class="bg-white dark:bg-[#1a2632] rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-8 text-center flex flex-col items-center gap-6 animate-fade-in">
         <div class="size-20 rounded-full flex items-center justify-center"
-             [ngClass]="score() >= 7 ? 'bg-green-100 dark:bg-green-900/30 text-green-500' : 'bg-red-100 dark:bg-red-900/30 text-red-500'">
+             [class]="score() >= 7 ? 'bg-green-100 dark:bg-green-900/30 text-green-500' : 'bg-red-100 dark:bg-red-900/30 text-red-500'">
           <span class="material-symbols-outlined !text-5xl">{{ score() >= 7 ? 'emoji_events' : 'sentiment_dissatisfied' }}</span>
         </div>
         <h1 class="text-3xl md:text-4xl font-black">¡Juego Terminado!</h1>

@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, OnInit, Signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { I18nPipe } from '../../pipes/i18n.pipe';
 import { I18nService, Language } from '../../services/i18n.service';
+import { ProgressService, Achievement } from '../../services/progress.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -10,14 +11,22 @@ import { I18nService, Language } from '../../services/i18n.service';
   imports: [RouterLink, I18nPipe],
 })
 export class DashboardComponent implements OnInit {
-  progresoGeneral = signal(0);
-  rachaActual = signal(0);
-  examenesAprobados = signal(0);
+  progresoGeneral: Signal<number>;
+  rachaActual: Signal<number>;
+  examenesAprobados: Signal<number>;
+  achievements: Signal<Achievement[]>;
+
   diasRestantes = signal(0);
   recommendedDailyStudy = signal(0);
   isLangMenuOpen = signal(false);
+  isMobileMenuOpen = signal(false);
 
-  constructor(public i18n: I18nService) {}
+  constructor(public i18n: I18nService, private progressService: ProgressService) {
+    this.progresoGeneral = this.progressService.progresoGeneral;
+    this.rachaActual = this.progressService.rachaActual;
+    this.examenesAprobados = this.progressService.examenesAprobados;
+    this.achievements = this.progressService.achievements;
+  }
 
   ngOnInit() {
     this.calculateDaysUntilExam();
@@ -61,5 +70,9 @@ export class DashboardComponent implements OnInit {
 
   toggleLangMenu() {
     this.isLangMenuOpen.update(v => !v);
+  }
+
+  toggleMobileMenu() {
+    this.isMobileMenuOpen.update(v => !v);
   }
 }

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ProgressService } from '../../../services/progress.service';
 
 type GameState = 'start' | 'playing' | 'finished';
 type PlayState = 'layout' | 'components' | 'wiring';
@@ -32,7 +33,7 @@ export class MaestroMontajeComponent {
   playState = signal<PlayState>('layout');
   
   // Game elements
-  inventory = signal<Draggable[]>([
+  inventoryMaster = signal<Draggable[]>([
     { id: 'duct-top', name: 'Canaleta Superior', type: 'duct', placed: false, width: 300, height: 40 },
     { id: 'rail1', name: 'Carril DIN 1', type: 'rail', placed: false, width: 300, height: 20 },
     { id: 'duct-mid', name: 'Canaleta Central', type: 'duct', placed: false, width: 300, height: 40 },
@@ -41,6 +42,7 @@ export class MaestroMontajeComponent {
     { id: 'km1', name: 'Contactor KM1', type: 'component', placed: false, width: 50, height: 60 },
     { id: 'f1', name: 'Relé Térmico F1', type: 'component', placed: false, width: 50, height: 60 },
   ]);
+  inventory = signal<Draggable[]>([]);
   
   placedItems = signal<Draggable[]>([]);
   wires = signal<Wire[]>([]);
@@ -54,7 +56,7 @@ export class MaestroMontajeComponent {
   layoutPlaced = computed(() => this.placedItems().filter(item => item.type === 'duct' || item.type === 'rail').length === 4);
   componentsPlaced = computed(() => this.placedItems().filter(item => item.type === 'component').length === 3);
 
-  constructor() {
+  constructor(private progressService: ProgressService) {
     effect(() => {
         if (this.layoutPlaced()) {
             setTimeout(() => this.playState.set('components'), 500);
@@ -68,6 +70,8 @@ export class MaestroMontajeComponent {
   startGame() {
     this.gameState.set('playing');
     this.playState.set('layout');
+    // Deep copy to reset state
+    this.inventory.set(JSON.parse(JSON.stringify(this.inventoryMaster())));
     this.placedItems.set([]);
     this.wires.set([]);
     this.cleanliness.set(100);
@@ -107,7 +111,10 @@ export class MaestroMontajeComponent {
     const cleanlinessScore = this.cleanliness();
     const correctnessScore = this.isWiringCorrect() ? 100 : 0;
     
-    this.finalScore.set(Math.round((correctnessScore * 0.7) + (cleanlinessScore * 0.3)));
+    const calculatedScore = Math.round((correctnessScore * 0.7) + (cleanlinessScore * 0.3));
+    this.finalScore.set(calculatedScore);
+    
+    this.progressService.completeGame(calculatedScore, 100);
 
     if (!this.isWiringCorrect()) {
         this.feedbackMessage.set('¡Asere, te faltan cables o componentes! Revisa el esquema, que algo no está bien conectado.');

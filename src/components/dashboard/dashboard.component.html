@@ -41,12 +41,30 @@
           </div>
           <!-- Mobile Menu Icon -->
           <div class="md:hidden">
-            <span class="material-symbols-outlined">menu</span>
+            <button (click)="toggleMobileMenu()" class="p-2">
+              <span class="material-symbols-outlined">menu</span>
+            </button>
           </div>
         </div>
       </div>
     </div>
   </header>
+
+  <!-- Mobile Menu -->
+  @if (isMobileMenuOpen()) {
+    <div class="fixed inset-0 bg-black/50 z-50 md:hidden" (click)="toggleMobileMenu()">
+      <div class="fixed top-0 left-0 h-full w-64 bg-white dark:bg-[#1a2632] shadow-xl p-6" (click)="$event.stopPropagation()">
+          <nav class="flex flex-col gap-4">
+              <a (click)="toggleMobileMenu()" class="text-lg font-bold text-blue-600 py-2" routerLink="/dashboard">{{ 'header.nav.home' | i18n }}</a>
+              <a (click)="toggleMobileMenu()" class="text-lg font-medium hover:text-blue-600 transition-colors py-2" routerLink="/theory">{{ 'header.nav.theory' | i18n }}</a>
+              <a (click)="toggleMobileMenu()" class="text-lg font-medium hover:text-blue-600 transition-colors py-2" routerLink="/practice">{{ 'header.nav.practice' | i18n }}</a>
+              <a (click)="toggleMobileMenu()" class="text-lg font-medium hover:text-blue-600 transition-colors py-2" routerLink="/games">{{ 'header.nav.games' | i18n }}</a>
+              <a (click)="toggleMobileMenu()" class="text-lg font-medium hover:text-blue-600 transition-colors py-2" routerLink="/simulator">{{ 'header.nav.simulator' | i18n }}</a>
+          </nav>
+      </div>
+    </div>
+  }
+
   <main class="flex h-full grow flex-col">
     <!-- Hero Section -->
     <div class="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">
@@ -189,35 +207,17 @@
           <a class="text-sm font-medium text-blue-600 hover:underline" href="#">{{ 'dashboard.achievements.viewAll' | i18n }}</a>
         </div>
         <div class="flex gap-4 px-4 overflow-x-auto pb-4">
-          <!-- Badges here -->
-          <div class="flex items-center gap-3 bg-white dark:bg-[#1a2632] p-3 rounded-lg border border-gray-100 dark:border-gray-800 min-w-[200px] opacity-60">
-            <div class="bg-yellow-100 dark:bg-yellow-900/30 p-2 rounded-full text-yellow-600"><span class="material-symbols-outlined">emoji_events</span></div>
-            <div>
-              <p class="text-sm font-bold">{{ 'dashboard.achievements.badge1' | i18n }}</p>
-              <p class="text-xs text-gray-500">{{ 'dashboard.achievements.locked' | i18n }}</p>
+          @for (ach of achievements(); track ach.id) {
+            <div class="flex items-center gap-3 bg-white dark:bg-[#1a2632] p-3 rounded-lg border border-gray-100 dark:border-gray-800 min-w-[200px]" [class.opacity-40]="!ach.unlocked">
+              <div class="p-2 rounded-full" [class]="ach.unlocked ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-400'">
+                <span class="material-symbols-outlined">{{ ach.unlocked ? ach.icon : 'lock' }}</span>
+              </div>
+              <div>
+                <p class="text-sm font-bold">{{ ach.title }}</p>
+                <p class="text-xs text-gray-500">{{ ach.unlocked ? ach.description : ('dashboard.achievements.locked' | i18n) }}</p>
+              </div>
             </div>
-          </div>
-          <div class="flex items-center gap-3 bg-white dark:bg-[#1a2632] p-3 rounded-lg border border-gray-100 dark:border-gray-800 min-w-[200px] opacity-60">
-            <div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full text-blue-600"><span class="material-symbols-outlined">bolt</span></div>
-            <div>
-              <p class="text-sm font-bold">{{ 'dashboard.achievements.badge2' | i18n }}</p>
-              <p class="text-xs text-gray-500">{{ 'dashboard.achievements.locked' | i18n }}</p>
-            </div>
-          </div>
-           <div class="flex items-center gap-3 bg-white dark:bg-[#1a2632] p-3 rounded-lg border border-gray-100 dark:border-gray-800 min-w-[200px] opacity-60">
-            <div class="bg-red-100 dark:bg-red-900/30 p-2 rounded-full text-red-500"><span class="material-symbols-outlined">workspace_premium</span></div>
-            <div>
-              <p class="text-sm font-bold">{{ 'dashboard.achievements.badge3' | i18n }}</p>
-              <p class="text-xs text-gray-500">{{ 'dashboard.achievements.locked' | i18n }}</p>
-            </div>
-          </div>
-           <div class="flex items-center gap-3 bg-white dark:bg-[#1a2632] p-3 rounded-lg border border-gray-100 dark:border-gray-800 min-w-[200px] opacity-60">
-            <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-full text-gray-400"><span class="material-symbols-outlined">lock</span></div>
-            <div>
-              <p class="text-sm font-bold">{{ 'dashboard.achievements.badge4' | i18n }}</p>
-              <p class="text-xs text-gray-500">{{ 'dashboard.achievements.locked' | i18n }}</p>
-            </div>
-          </div>
+          }
         </div>
       </div>
     </div>
